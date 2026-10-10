@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 async def connect_mongo(uri: str, database_name: str) -> tuple[Any, Any]:
     """Connect to MongoDB if pymongo is installed and URI is configured."""
     try:
-        from pymongo import ASCENDING, DESCENDING
         try:
             from pymongo import AsyncMongoClient
         except ImportError:

@@ -9,7 +9,7 @@ from app.repositories.base import FileRepository
 
 
 class MemoryRepository(FileRepository):
-    """A lightweight in-memory repository with the same observable behavior as persistent backends."""
+    """Lightweight in-memory repository with same behavior as persistent backends."""
 
     def __init__(self) -> None:
         self.files: dict[str, dict[str, Any]] = {}
@@ -47,7 +47,9 @@ class MemoryRepository(FileRepository):
                     "geometry_type": feature.geometry_type,
                     "geometry": feature.geometry,
                     "crs": feature.crs,
-                    "properties": dict(feature.properties) if feature.properties is not None else {},
+                    "properties": dict(feature.properties)
+                    if feature.properties is not None
+                    else {},
                     "measurement_status": feature.measurement_status,
                     "area_sq_m": feature.area_sq_m,
                     "length_m": feature.length_m,

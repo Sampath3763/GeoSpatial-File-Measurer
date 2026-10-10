@@ -83,9 +83,7 @@ def read_and_measure(
             )
         )
     source_crs = (
-        next(iter(crs_values))
-        if len(crs_values) == 1
-        else ("Mixed" if crs_values else None)
+        next(iter(crs_values)) if len(crs_values) == 1 else ("Mixed" if crs_values else None)
     )
     return records, source_crs, list(dict.fromkeys(warnings))
 
@@ -127,9 +125,7 @@ def _read_shapefiles(
     return records, warnings
 
 
-def _read_kml(
-    kml_path: Path, maximum_features: int
-) -> tuple[list[RawFeature], list[str]]:
+def _read_kml(kml_path: Path, maximum_features: int) -> tuple[list[RawFeature], list[str]]:
     """Prefer the GDAL KML driver, falling back to the built-in XML parser."""
     driver_names = pyogrio.list_drivers()
     if not any(name in driver_names for name in ("KML", "LIBKML")):
@@ -290,8 +286,7 @@ def _parse_kml_fallback(
         geometry_nodes = [
             child
             for child in placemark
-            if etree.QName(child).localname
-            in {"Point", "LineString", "Polygon", "MultiGeometry"}
+            if etree.QName(child).localname in {"Point", "LineString", "Polygon", "MultiGeometry"}
         ]
         geometries = []
         for node in geometry_nodes:
@@ -325,11 +320,7 @@ def _parse_kml_geometry(node: Any) -> BaseGeometry | None:
     """Recursively parse one KML geometry element."""
     tag = etree.QName(node).localname
     if tag == "MultiGeometry":
-        parts = [
-            geometry
-            for child in node
-            if (geometry := _parse_kml_geometry(child)) is not None
-        ]
+        parts = [geometry for child in node if (geometry := _parse_kml_geometry(child)) is not None]
         return _combine_geometries(parts) if parts else GeometryCollection()
     if tag == "Point":
         coordinates = _coordinates_from_text(node.xpath("string(.//*[local-name()='coordinates'])"))
@@ -347,10 +338,7 @@ def _parse_kml_geometry(node: Any) -> BaseGeometry | None:
         inner_coordinates = node.xpath(
             ".//*[local-name()='innerBoundaryIs']//*[local-name()='coordinates']"
         )
-        holes = [
-            _coordinates_from_text(node.xpath("string(.)"))
-            for node in inner_coordinates
-        ]
+        holes = [_coordinates_from_text(node.xpath("string(.)")) for node in inner_coordinates]
         return Polygon(exterior, [ring for ring in holes if len(ring) >= 4])
     return None
 

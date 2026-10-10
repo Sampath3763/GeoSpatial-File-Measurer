@@ -68,7 +68,7 @@ class SqliteRepository(FileRepository):
             for key, val in fields.items():
                 if key in {"warnings", "geometry_type_counts"} and not isinstance(val, str):
                     val = json.dumps(val)
-                elif val is not None and not isinstance(val, (int, float, str, bytes)):
+                elif val is not None and not isinstance(val, int | float | str | bytes):
                     val = str(val)
                 set_clauses.append(f"{key} = ?")
                 values.append(val)
@@ -238,13 +238,15 @@ class SqliteRepository(FileRepository):
             total_length = round(float(sums[1]), 4) if sums else 0.0
 
             cur.execute(
-                "SELECT geometry_type, COUNT(*) FROM features WHERE file_id = ? GROUP BY geometry_type;",
+                "SELECT geometry_type, COUNT(*) FROM features "
+                "WHERE file_id = ? GROUP BY geometry_type;",
                 (file_id,),
             )
             geom_counts = {row[0]: row[1] for row in cur.fetchall()}
 
             cur.execute(
-                "SELECT measurement_status, COUNT(*) FROM features WHERE file_id = ? GROUP BY measurement_status;",
+                "SELECT measurement_status, COUNT(*) FROM features "
+                "WHERE file_id = ? GROUP BY measurement_status;",
                 (file_id,),
             )
             status_counts = {row[0]: row[1] for row in cur.fetchall()}

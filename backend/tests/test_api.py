@@ -35,9 +35,7 @@ def test_kml_upload_metadata_measurements_features_and_delete(
     assert payload["features"][0]["geometry_type"] == "Point"
     assert payload["features"][0]["measurement_status"] == "NOT_APPLICABLE"
 
-    filtered = client.get(
-        f"/api/files/{file_id}/measurements/?geometry_type=Polygon&limit=10"
-    )
+    filtered = client.get(f"/api/files/{file_id}/measurements/?geometry_type=Polygon&limit=10")
     assert filtered.status_code == 200
     assert len(filtered.json()["features"]) == 1
     assert filtered.json()["summary"] == payload["summary"]
@@ -50,8 +48,7 @@ def test_kml_upload_metadata_measurements_features_and_delete(
     assert feature_payload["features"][0]["geometry"] is not None
     properties = feature_payload["features"][0]["properties"]
     assert any(
-        key.casefold() == "name" and value == "Survey boundary"
-        for key, value in properties.items()
+        key.casefold() == "name" and value == "Survey boundary" for key, value in properties.items()
     )
 
     history = client.get("/api/files/?limit=10&offset=0")

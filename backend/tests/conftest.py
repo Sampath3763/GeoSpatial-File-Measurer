@@ -1,13 +1,12 @@
 """Programmatic geospatial fixtures and isolated API test dependencies."""
 
 import io
+import zipfile
 from pathlib import Path
 from typing import Any
-import zipfile
 
 import geopandas as gpd
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from shapely.geometry import Polygon
 

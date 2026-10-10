@@ -110,7 +110,10 @@ async def get_file_features(
     offset: int = Query(default=0, ge=0),
     include_geometry: bool = Query(
         default=True,
-        description="Whether to include full coordinate arrays (set to false for fast preview of large geometries in browser UI)",
+        description=(
+            "Whether to include full coordinate arrays (set to false for fast preview of large "
+            "geometries in browser UI)"
+        ),
     ),
     repository: FileRepository = Depends(get_repository),
 ) -> dict[str, Any]:

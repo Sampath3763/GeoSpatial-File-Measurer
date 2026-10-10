@@ -2,9 +2,9 @@
 
 import asyncio
 import logging
-from pathlib import Path
 import sqlite3
 import threading
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -89,9 +89,7 @@ def _init_tables(conn: sqlite3.Connection) -> None:
         );
         """
     )
-    cur.execute(
-        "CREATE INDEX IF NOT EXISTS idx_files_created ON uploaded_files(created_at DESC);"
-    )
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_files_created ON uploaded_files(created_at DESC);")
     cur.execute(
         "CREATE INDEX IF NOT EXISTS idx_features_file_idx ON features(file_id, feature_index);"
     )

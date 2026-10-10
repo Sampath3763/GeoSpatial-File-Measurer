@@ -3,7 +3,6 @@
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
@@ -11,10 +10,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from app.api.routes.analytics import router as analytics_router
 from app.api.routes.files import router as files_router
 from app.api.routes.health import router as health_router
 from app.core.config import Settings, get_settings
-from app.core.errors import AppError, DatabaseUnavailable
+from app.core.errors import AppError
 from app.db.sqlite import init_sqlite_db
 from app.repositories.memory_repository import MemoryRepository
 from app.repositories.sqlite_repository import SqliteRepository
@@ -71,7 +71,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application = FastAPI(
         title="Geospatial File Measurement API",
         version="1.0.0",
-        description="Upload KML and zipped Shapefiles, extract features, and calculate projected measurements.",
+        description=(
+            "Upload KML and zipped Shapefiles, extract features, and calculate "
+            "projected measurements."
+        ),
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
@@ -102,6 +105,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return application.openapi()
 
     application.include_router(files_router)
+    application.include_router(analytics_router)
     application.include_router(health_router)
     application.state.settings = configuration
 

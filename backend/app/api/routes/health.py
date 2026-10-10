@@ -1,9 +1,8 @@
 """Liveness and backend readiness health checks."""
 
 import logging
-from typing import Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 
 from app.api.dependencies import get_repository
 from app.core.errors import DatabaseUnavailable

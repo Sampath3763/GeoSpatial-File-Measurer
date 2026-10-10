@@ -1,8 +1,10 @@
 """End-to-end integration test with the real SQLite repository."""
 
 from pathlib import Path
+
+from conftest import SAMPLE_KML, upload_files
 from fastapi.testclient import TestClient
-from conftest import upload_files, SAMPLE_KML
+
 from app.core.config import Settings
 from app.main import create_app
 

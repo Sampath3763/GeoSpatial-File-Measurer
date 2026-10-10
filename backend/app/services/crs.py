@@ -60,9 +60,7 @@ def select_measurement_crs(geometry_wgs84: BaseGeometry) -> tuple[str, str]:
 
     coordinates = _coordinates(geometry_wgs84)
     zones = {
-        min(60, max(1, int((lon + 180) // 6) + 1))
-        for lon, _ in coordinates
-        if -180 <= lon <= 180
+        min(60, max(1, int((lon + 180) // 6) + 1)) for lon, _ in coordinates if -180 <= lon <= 180
     }
     crosses_zone = len(zones) > 1
     crosses_dateline = crosses_antimeridian(geometry_wgs84)

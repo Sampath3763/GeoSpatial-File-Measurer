@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime
 from pathlib import Path
+
 import pytest
 
 from app.db.sqlite import init_sqlite_db
@@ -89,7 +90,9 @@ async def test_sqlite_repository_full_lifecycle(tmp_path: Path) -> None:
     assert feats[1]["length_m"] == 5432.1
 
     # Filter by geometry type
-    polygon_feats, poly_total = await repo.get_features(file_id, limit=10, offset=0, geometry_type="Polygon")
+    polygon_feats, poly_total = await repo.get_features(
+        file_id, limit=10, offset=0, geometry_type="Polygon"
+    )
     assert poly_total == 1
     assert len(polygon_feats) == 1
     assert polygon_feats[0]["geometry_type"] == "Polygon"
