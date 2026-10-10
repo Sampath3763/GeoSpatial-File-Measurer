@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Placemark>
+      <name>Survey marker</name>
+      <Point><coordinates>-122.4194,37.7749,15</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>Sample parcel</name>
+      <ExtendedData>
+        <Data name="parcel.id"><value>SF-001</value></Data>
+        <Data name="survey.team"><value>North crew</value></Data>
+      </ExtendedData>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>
+          -122.4200,37.7745 -122.4190,37.7745
+          -122.4190,37.7753 -122.4200,37.7753 -122.4200,37.7745
+        </coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>Access path</name>
+      <LineString>
+        <coordinates>-122.4210,37.7749 -122.4194,37.7749</coordinates>
+      </LineString>
+    </Placemark>
+  </Document>
+</kml>

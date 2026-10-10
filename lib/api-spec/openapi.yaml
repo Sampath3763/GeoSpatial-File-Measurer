@@ -1,0 +1,350 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Geospatial File Measurement API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: files
+    description: Upload and inspect geospatial files
+  - name: health
+    description: Health operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /health:
+    get:
+      operationId: getHealth
+      tags: [health]
+      summary: Check API and database health
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "503":
+          $ref: "#/components/responses/ApiError"
+  /files/:
+    get:
+      operationId: listFiles
+      tags: [files]
+      summary: List uploaded files, newest first
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Paginated file list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileList"
+        "503":
+          $ref: "#/components/responses/ApiError"
+    post:
+      operationId: uploadFile
+      tags: [files]
+      summary: Upload and synchronously process a KML or zipped Shapefile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/FileUploadInput"
+      responses:
+        "201":
+          description: File processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileInfo"
+        "400":
+          $ref: "#/components/responses/ApiError"
+        "413":
+          $ref: "#/components/responses/ApiError"
+        "415":
+          $ref: "#/components/responses/ApiError"
+        "422":
+          $ref: "#/components/responses/ApiError"
+        "503":
+          $ref: "#/components/responses/ApiError"
+  /files/{file_id}/:
+    parameters:
+      - $ref: "#/components/parameters/FileId"
+    get:
+      operationId: getFile
+      tags: [files]
+      summary: Get uploaded file information
+      responses:
+        "200":
+          description: File information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileInfo"
+        "404":
+          $ref: "#/components/responses/ApiError"
+        "503":
+          $ref: "#/components/responses/ApiError"
+    delete:
+      operationId: deleteFile
+      tags: [files]
+      summary: Delete a file and its feature records
+      responses:
+        "204":
+          description: File and features deleted
+        "404":
+          $ref: "#/components/responses/ApiError"
+        "503":
+          $ref: "#/components/responses/ApiError"
+  /files/{file_id}/measurements/:
+    parameters:
+      - $ref: "#/components/parameters/FileId"
+    get:
+      operationId: getFileMeasurements
+      tags: [files]
+      summary: Get paginated measurements and whole-file totals
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: geometry_type
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Measurements and summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeasurementsPage"
+        "404":
+          $ref: "#/components/responses/ApiError"
+        "409":
+          $ref: "#/components/responses/ApiError"
+        "503":
+          $ref: "#/components/responses/ApiError"
+  /files/{file_id}/features/:
+    parameters:
+      - $ref: "#/components/parameters/FileId"
+    get:
+      operationId: getFileFeatures
+      tags: [files]
+      summary: Get paginated feature geometry and properties
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Feature page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeaturePage"
+        "404":
+          $ref: "#/components/responses/ApiError"
+        "503":
+          $ref: "#/components/responses/ApiError"
+components:
+  parameters:
+    FileId:
+      in: path
+      name: file_id
+      required: true
+      schema:
+        type: string
+  responses:
+    ApiError:
+      description: API error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, details]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details:
+              type: ["object", "null"]
+              additionalProperties: true
+    FileUploadInput:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+    FileInfo:
+      type: object
+      required: [id, filename, file_type, feature_count, crs, status, warnings, error_message, geometry_type_counts, created_at]
+      properties:
+        id: { type: string }
+        filename: { type: string }
+        file_type: { type: string, enum: [shapefile, kml] }
+        feature_count: { type: integer }
+        crs: { type: ["string", "null"] }
+        status: { type: string, enum: [PENDING, PROCESSING, COMPLETED, FAILED] }
+        warnings:
+          type: array
+          items: { type: string }
+        error_message: { type: ["string", "null"] }
+        geometry_type_counts:
+          type: object
+          additionalProperties: { type: integer }
+        created_at: { type: string, format: date-time }
+    FileList:
+      type: object
+      required: [total, limit, offset, files]
+      properties:
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/FileInfo"
+    MeasurementSummary:
+      type: object
+      required: [total_area_sq_m, total_length_m, counts_by_geometry_type, counts_by_measurement_status]
+      properties:
+        total_area_sq_m: { type: number }
+        total_length_m: { type: number }
+        counts_by_geometry_type:
+          type: object
+          additionalProperties: { type: integer }
+        counts_by_measurement_status:
+          type: object
+          additionalProperties: { type: integer }
+    MeasurementValues:
+      type: object
+      properties:
+        area_sq_m: { type: ["number", "null"] }
+        area_hectares: { type: ["number", "null"] }
+        area_sq_km: { type: ["number", "null"] }
+        length_m: { type: ["number", "null"] }
+        length_km: { type: ["number", "null"] }
+    MeasurementFeature:
+      type: object
+      required: [feature_index, layer, geometry_type, measurement_status, measurements, projected_crs, method, note]
+      properties:
+        feature_index: { type: integer }
+        layer: { type: ["string", "null"] }
+        geometry_type: { type: string }
+        measurement_status: { type: string, enum: [CALCULATED, NOT_APPLICABLE, UNSUPPORTED, ERROR] }
+        measurements:
+          oneOf:
+            - $ref: "#/components/schemas/MeasurementValues"
+            - type: "null"
+        projected_crs: { type: ["string", "null"] }
+        method: { type: ["string", "null"] }
+        note: { type: ["string", "null"] }
+    MeasurementsPage:
+      type: object
+      required: [file_id, status, crs, feature_count, summary, pagination, features]
+      properties:
+        file_id: { type: string }
+        status: { type: string }
+        crs: { type: ["string", "null"] }
+        feature_count: { type: integer }
+        summary:
+          $ref: "#/components/schemas/MeasurementSummary"
+        pagination:
+          type: object
+          required: [limit, offset, returned]
+          properties:
+            limit: { type: integer }
+            offset: { type: integer }
+            returned: { type: integer }
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/MeasurementFeature"
+    Feature:
+      type: object
+      required: [feature_index, geometry_type, geometry, crs, properties]
+      properties:
+        feature_index: { type: integer }
+        geometry_type: { type: string }
+        geometry:
+          type: ["object", "null"]
+          additionalProperties: true
+        crs: { type: ["string", "null"] }
+        properties:
+          type: object
+          additionalProperties: true
+    FeaturePage:
+      type: object
+      required: [file_id, limit, offset, total, features]
+      properties:
+        file_id: { type: string }
+        limit: { type: integer }
+        offset: { type: integer }
+        total: { type: integer }
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/Feature"
+
